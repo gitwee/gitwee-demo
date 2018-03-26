@@ -1,13 +1,16 @@
 package com.gitwee.demo.config;
 
-import com.gitwee.demo.shiro.DemoRealm;
+import com.gitwee.demo.shiro.filter.LoginFormAuthenticationFilter;
+import com.gitwee.demo.shiro.realm.LoginRealm;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.servlet.Filter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +21,12 @@ public class ShiroConfig {
     public ShiroFilterFactoryBean shiroFilter(SecurityManager securityManager) {
         ShiroFilterFactoryBean shiroFilterFactory = new ShiroFilterFactoryBean();
         shiroFilterFactory.setSecurityManager(securityManager);
+
+
+        Map<String, javax.servlet.Filter> filters = new HashMap<>();
+        filters.put("authc", new LoginFormAuthenticationFilter());
+        shiroFilterFactory.setFilters(filters);
+
 
         Map<String,String> chainDefinitionMap = new HashMap<>();
         chainDefinitionMap.put("/static/**", "anon");
@@ -40,8 +49,13 @@ public class ShiroConfig {
 
     @Bean
     public AuthorizingRealm shiroRealm() {
-        AuthorizingRealm demoRealm = new DemoRealm();
+        AuthorizingRealm demoRealm = new LoginRealm();
         return  demoRealm;
+    }
+
+    @Bean
+    public LifecycleBeanPostProcessor lifecycleBeanPostProcessor() {
+        return new LifecycleBeanPostProcessor();
     }
 
 }
